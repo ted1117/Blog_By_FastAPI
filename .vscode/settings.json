@@ -1,0 +1,20 @@
+{
+    // isort를 import 정리에 사용하도록 지정
+    "python.sortImports.enabled": true,
+    "python.sortImports.args": [
+        "--profile=black"
+    ],
+    // 파일 저장 시 isort 실행
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    // 또는 formatOnSave에 isort 명시적으로 추가
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    }
+}
