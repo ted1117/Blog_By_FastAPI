@@ -36,3 +36,17 @@ def update_existing_post(post_id: int, post_in: PostUpdate, user: User = Depends
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough permissions")
     
     return update_post(db=db, db_post=db_post, post_in=post_in)
+
+@router.delete("/{post_id}")
+def delete_existing_post(post_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_post = get_post(db, post_id)
+    
+    if not db_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+    
+    if db_post.user_id != user.id or user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    
+    delete_post(db, db_post)
+
+    return {"detail": "Post deleted."}
