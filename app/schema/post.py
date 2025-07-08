@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,12 +10,15 @@ class PostBase(BaseModel):
     title: str
     content: str
 
+
 class PostCreate(PostBase):
     pass
+
 
 class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
+
 
 class PostRead(PostBase):
     id: int
@@ -27,5 +30,6 @@ class PostRead(PostBase):
         from_attributes=True,
     )
 
+
 class PostReadWithComments(PostRead):
-    comments: List["CommentRead"] = []
+    comments: list["CommentRead"] = []

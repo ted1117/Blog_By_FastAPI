@@ -14,4 +14,5 @@ class Settings(BaseSettings):
         if self.SECRET_KEY == "":
             raise ValueError("SECRET_KEY가 .env 파일에 설정되지 않았습니다.")
 
+
 settings = Settings()

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -16,7 +15,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
-    role:Mapped[str] = mapped_column(default="user")
+    role: Mapped[str] = mapped_column(default="user")
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
         server_default=func.now(),
@@ -29,6 +28,3 @@ class User(Base):
 
     posts = relationship("Post", back_populates="user")
     comments = relationship("Comment", back_populates="user")
-
-    # posts: Mapped[List["Post"]] = relationship(back_populates="user")
-    # comments: Mapped[List["Comment"]] = relationship(back_populates="user")

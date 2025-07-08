@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,10 +27,6 @@ class Post(Base):
     )
 
     user = relationship("User", back_populates="posts")
-    comments = relationship("Comments", back_populates="posts", cascade="all, delete-orphan")
-
-    # user: Mapped["User"] = relationship(back_populates="posts")
-    # comments: Mapped[List["Comment"]] = relationship(
-    #     back_populates="posts",
-    #     cascade="all, delete-orphan"
-    # )
+    comments = relationship(
+        "Comments", back_populates="posts", cascade="all, delete-orphan"
+    )
