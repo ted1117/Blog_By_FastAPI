@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.api.v1.endpoints.comment import router as comment_router
 from app.crud.post import create_post, delete_post, get_post, get_posts, update_post
 from app.models import User
 from app.models.post import Post
@@ -62,3 +63,11 @@ def delete_existing_post(post_id: int, user: User = Depends(get_current_user), d
     delete_post(db, db_post)
 
     return {"detail": "Post deleted."}
+
+
+# comment router
+router.include_router(
+    comment_router,
+    prefix="/{post_id}/comments",
+    tags=["comments"]
+)
