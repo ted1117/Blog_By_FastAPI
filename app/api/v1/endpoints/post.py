@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from typing import Annotated
 
-from app.api.deps import get_current_user, get_db
+from fastapi import APIRouter, HTTPException, Path, Query, status
+
+from app.api.deps import CurrentUser, DbSession
 from app.api.v1.endpoints.comment import router as comment_router
 from app.crud.post import create_post, delete_post, get_post, get_posts, update_post
-from app.models import User
 from app.models.post import Post
 from app.schema.post import PostCreate, PostRead, PostUpdate
 
@@ -12,13 +12,21 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[PostRead], summary="게시글 목록 조회")
-def read_posts(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    """게시글을 10개 단위로 페이지네이션하여 반환합니다."""
+def read_posts(
+    db: DbSession,
+    skip: Annotated[int, Query(ge=0, description="건너뛸 게시글의 수")] = 0,
+    limit: Annotated[
+        int, Query(ge=1, le=100, description="한 번에 가져올 최대 게시글의 수")
+    ] = 10,
+):
+    """게시글을 페이지네이션하여 반환합니다."""
     return get_posts(db, skip, limit)
 
 
 @router.get("/{post_id}", response_model=PostRead, summary="특정 게시글 조회")
-def read_post(post_id: int, db: Session = Depends(get_db)) -> Post:
+def read_post(
+    post_id: Annotated[int, Path(title="게시글 ID", ge=1)], db: DbSession
+) -> Post:
     """게시글 ID로 특정 게시글을 조회합니다."""
     db_post = get_post(db, post_id)
     if not db_post:
@@ -34,9 +42,9 @@ def read_post(post_id: int, db: Session = Depends(get_db)) -> Post:
     summary="새로운 게시글 생성",
 )
 def create_new_post(
+    user: CurrentUser,
+    db: DbSession,
     post_in: PostCreate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ) -> Post:
     """새로운 게시글을 등록합니다."""
     return create_post(db, user.id, post_in)
@@ -44,11 +52,11 @@ def create_new_post(
 
 @router.put("/{post_id}", response_model=PostRead, summary="기존 게시글 수정")
 def update_existing_post(
-    post_id: int,
+    user: CurrentUser,
+    db: DbSession,
+    post_id: Annotated[int, Path(title="수정할 게시글 ID", ge=1)],
     post_in: PostUpdate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
+) -> Post:
     """
     기존 게시글을 수정합니다.
 
@@ -59,7 +67,7 @@ def update_existing_post(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
         )
-    if db_post.user_id != user.id or user.role != "admin":
+    if db_post.user_id != user.id and user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough permissions"
         )
@@ -69,7 +77,9 @@ def update_existing_post(
 
 @router.delete("/{post_id}", summary="기존 게시글 삭제")
 def delete_existing_post(
-    post_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    user: CurrentUser,
+    db: DbSession,
+    post_id: Annotated[int, Path(title="삭제할 게시글 ID", ge=1)],
 ):
     """
     기존 게시글을 삭제합니다.

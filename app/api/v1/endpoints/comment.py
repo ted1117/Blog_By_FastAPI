@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from typing import Annotated
 
-from app.api.deps import get_current_user, get_db
+from fastapi import APIRouter, HTTPException, Path, Query, status
+
+from app.api.deps import CurrentUser, DbSession
 from app.crud.comment import (
     create_comment,
     delete_comment,
@@ -9,14 +10,16 @@ from app.crud.comment import (
     get_comments_by_post,
     update_comment,
 )
-from app.models import Comment, User
+from app.models import Comment
 from app.schema.comment import CommentCreate, CommentRead, CommentUpdate
 
 router = APIRouter()
 
 
 @router.get("/{comment_id}", response_model=CommentRead, summary="특정 댓글 조회")
-def read_comment(comment_id: int, db: Session = Depends(get_db)) -> Comment:
+def read_comment(
+    comment_id: Annotated[int, Path(title="댓글 ID")], db: DbSession
+) -> Comment:
     """
     댓글 ID를 이용하여 특정 댓글을 조회합니다.
     해당 댓글이 없으면 `404 Not Found`를 반환합니다.
@@ -33,7 +36,10 @@ def read_comment(comment_id: int, db: Session = Depends(get_db)) -> Comment:
 
 @router.get("/", response_model=list[CommentRead], summary="게시글 댓글 목록 조회")
 def read_comments(
-    post_id: int, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)
+    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    db: DbSession,
+    skip: Annotated[int, Query(ge=0, description="건너뛸 댓글 수")] = 0,
+    limit: Annotated[int, Query(ge=1, le=100, description="가져올 최대 댓글 수")] = 10,
 ):
     """게시글 ID에 해당하는 댓글 목록을 페이지네이션하여 반환합니다."""
     return get_comments_by_post(db, post_id, skip, limit)
@@ -46,10 +52,10 @@ def read_comments(
     summary="새로운 댓글 작성",
 )
 def create_new_comment(
-    post_id: int,
+    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    user: CurrentUser,
+    db: DbSession,
     comment_in: CommentCreate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ) -> Comment:
     """
     특정 게시글에 새로운 댓글을 등록합니다.
@@ -61,10 +67,11 @@ def create_new_comment(
 
 @router.put("/{comment_id}", response_model=CommentRead, summary="기존 댓글 수정")
 def update_existing_comment(
-    comment_id: int,
+    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    comment_id: Annotated[int, Path(title="수정할 댓글 ID", ge=1)],
+    user: CurrentUser,
+    db: DbSession,
     comment_in: CommentUpdate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ) -> Comment:
     """
     기존 댓글 내용을 수정합니다.
@@ -76,6 +83,11 @@ def update_existing_comment(
     if not db_comment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found."
+        )
+
+    if db_comment.post_id != post_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Access."
         )
 
     if db_comment.user_id != user.id or user.role != "admin":
@@ -90,9 +102,10 @@ def update_existing_comment(
     "/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, summary="기존 댓글 삭제"
 )
 def delete_existing_comment(
-    comment_id: int,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    comment_id: Annotated[int, Path(title="삭제할 댓글 ID", ge=1)],
+    user: CurrentUser,
+    db: DbSession,
 ):
     """
     특정 댓글을 삭제합니다.
@@ -104,6 +117,11 @@ def delete_existing_comment(
     if not db_comment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found."
+        )
+
+    if db_comment.post_id != post_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong Access."
         )
 
     if db_comment.user_id != user.id or user.role != "admin":
