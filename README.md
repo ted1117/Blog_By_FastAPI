@@ -64,9 +64,9 @@
 | ------ | ------ | ---------------- | --------------------- |
 | **게시글** | GET    | /api/v1/posts/      | 게시글 목록 조회      |
 | | POST   | /api/v1/posts/      | 게시글 작성           |
-| | GET    | /api/v1/posts/{id}/ | 특정 게시글 상세 조회 |
-| | PUT    | /api/v1/posts/{id}/ | 게시글 수정           |
-| | DELETE | /api/v1/posts/{id}/ | 게시글 삭제           |
+| | GET    | /api/v1/posts/{post_id}/ | 특정 게시글 상세 조회 |
+| | PUT    | /api/v1/posts/{post_id}/ | 게시글 수정           |
+| | DELETE | /api/v1/posts/{post_id}/ | 게시글 삭제           |
 | **댓글** | GET    | /api/v1/posts/{post_id}/comments/   | 게시글 內 댓글 목록 조회        |
 | | GET | /api/v1/posts/{post_id}/comments/{comment_id}/ | 게시글 內 특정 댓글 상세 조회 |
 | | POST   | /api/v1/posts/{post_id}/comments/   | 댓글 작성             |
