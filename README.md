@@ -1,8 +1,17 @@
 # FastAPI로 구동하는 블로그
 ## 목차
+- [사용 기술 스택](#사용-기술-스택)
 - [디렉토리 구조](#디렉토리-구조)
 - [기능](#기능)
 - [엔드포인트](#엔드포인트)
+
+
+## 사용 기술 스택
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-cb3032?style=for-the-badge&logo=alchemy&logoColor=white)](https://www.sqlalchemy.org/)
+[![VSCode](https://img.shields.io/badge/VSCode-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
+
 
 ## 디렉토리 구조
 ```
@@ -50,6 +59,7 @@
 └── test.db
 ```
 
+
 ## 기능
 - 회원
   - 회원가입
@@ -58,6 +68,7 @@
   - CRUD
 - 댓글
   - CRUD
+
 
 ## 엔드포인트
 | Category | Method | Endpoint         | Description           |
