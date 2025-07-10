@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.api.deps import CurrentUser, DbSession
+from app.api.deps import CurrentUser, DbSession, PostId
 from app.api.v1.endpoints.comment import router as comment_router
 from app.crud.post import create_post, delete_post, get_post, get_posts, update_post
 from app.models.post import Post
@@ -24,9 +24,7 @@ def read_posts(
 
 
 @router.get("/{post_id}", response_model=PostRead, summary="특정 게시글 조회")
-def read_post(
-    post_id: Annotated[int, Path(title="게시글 ID", ge=1)], db: DbSession
-) -> Post:
+def read_post(post_id: PostId, db: DbSession) -> Post:
     """게시글 ID로 특정 게시글을 조회합니다."""
     db_post = get_post(db, post_id)
     if not db_post:
@@ -54,7 +52,7 @@ def create_new_post(
 def update_existing_post(
     user: CurrentUser,
     db: DbSession,
-    post_id: Annotated[int, Path(title="수정할 게시글 ID", ge=1)],
+    post_id: PostId,
     post_in: PostUpdate,
 ) -> Post:
     """
@@ -79,7 +77,7 @@ def update_existing_post(
 def delete_existing_post(
     user: CurrentUser,
     db: DbSession,
-    post_id: Annotated[int, Path(title="삭제할 게시글 ID", ge=1)],
+    post_id: PostId,
 ):
     """
     기존 게시글을 삭제합니다.

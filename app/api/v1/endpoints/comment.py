@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.api.deps import CurrentUser, DbSession
+from app.api.deps import CommentId, CurrentUser, DbSession, PostId
 from app.crud.comment import (
     create_comment,
     delete_comment,
@@ -17,9 +17,7 @@ router = APIRouter()
 
 
 @router.get("/{comment_id}", response_model=CommentRead, summary="특정 댓글 조회")
-def read_comment(
-    comment_id: Annotated[int, Path(title="댓글 ID")], db: DbSession
-) -> Comment:
+def read_comment(comment_id: CommentId, db: DbSession) -> Comment:
     """
     댓글 ID를 이용하여 특정 댓글을 조회합니다.
     해당 댓글이 없으면 `404 Not Found`를 반환합니다.
@@ -36,7 +34,7 @@ def read_comment(
 
 @router.get("/", response_model=list[CommentRead], summary="게시글 댓글 목록 조회")
 def read_comments(
-    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    post_id: PostId,
     db: DbSession,
     skip: Annotated[int, Query(ge=0, description="건너뛸 댓글 수")] = 0,
     limit: Annotated[int, Query(ge=1, le=100, description="가져올 최대 댓글 수")] = 10,
@@ -52,7 +50,7 @@ def read_comments(
     summary="새로운 댓글 작성",
 )
 def create_new_comment(
-    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
+    post_id: PostId,
     user: CurrentUser,
     db: DbSession,
     comment_in: CommentCreate,
@@ -67,8 +65,8 @@ def create_new_comment(
 
 @router.put("/{comment_id}", response_model=CommentRead, summary="기존 댓글 수정")
 def update_existing_comment(
-    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
-    comment_id: Annotated[int, Path(title="수정할 댓글 ID", ge=1)],
+    post_id: PostId,
+    comment_id: CommentId,
     user: CurrentUser,
     db: DbSession,
     comment_in: CommentUpdate,
@@ -102,8 +100,8 @@ def update_existing_comment(
     "/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, summary="기존 댓글 삭제"
 )
 def delete_existing_comment(
-    post_id: Annotated[int, Path(title="게시글 ID", ge=1)],
-    comment_id: Annotated[int, Path(title="삭제할 댓글 ID", ge=1)],
+    post_id: PostId,
+    comment_id: CommentId,
     user: CurrentUser,
     db: DbSession,
 ):
