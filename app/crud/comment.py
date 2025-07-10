@@ -69,5 +69,6 @@ def update_comment(
 
 
 def delete_comment(db: Session, db_comment: Comment):
+    """특정 댓글을 삭제합니다."""
     db.delete(db_comment)
     db.commit()
